@@ -134,27 +134,37 @@ def({
 def({
   kind: 'button', label: 'Przycisk chwilowy', category: 'Sterowanie',
   size: { w: 120, h: 56 },
-  bindings: [b('out', 'Zmienna sterowana', 'BOOL', 'TRUE przez czas naciśnięcia')],
+  bindings: [b('out', 'Zmienna sterowana', 'BOOL', 'zmienia się na czas naciśnięcia')],
   props: [
     p('text', 'Napis', 'text', 'START'),
     p('color', 'Kolor', 'color', '#2f9e5b'),
     p('shape', 'Kształt', 'select', 'round', [{ value: 'round', label: 'zaokrąglony' }, { value: 'circle', label: 'okrągły' }]),
+    p('nc', 'Zestyk rozwierny (NC)', 'bool', false),
   ],
   render: ({ w, val, set, interactive }) => {
-    const on = toBool(val.out)
+    // Zestyk rozwierny (typowy przycisk STOP): w spoczynku podaje TRUE,
+    // a naciśnięcie przerywa obwód, czyli ustawia FALSE.
+    const nc = bool(w, 'nc')
+    const pressed = nc ? !toBool(val.out) : toBool(val.out)
     const circle = str(w, 'shape', 'round') === 'circle'
+    const press = () => interactive && set('out', !nc)
+    const release = () => interactive && set('out', nc)
     return (
       <button
         disabled={!interactive}
-        onPointerDown={() => interactive && set('out', true)}
-        onPointerUp={() => interactive && set('out', false)}
-        onPointerLeave={() => interactive && on && set('out', false)}
+        onPointerDown={press}
+        onPointerUp={release}
+        onPointerCancel={release}
+        onPointerLeave={() => { if (pressed) release() }}
+        title={nc ? 'Zestyk rozwierny — naciśnięcie przerywa obwód' : undefined}
         style={{
           width: '100%', height: '100%', borderRadius: circle ? '50%' : 8,
-          background: on ? str(w, 'color', '#2f9e5b') : `color-mix(in srgb, ${str(w, 'color', '#2f9e5b')} 62%, #05080d)`,
+          background: pressed ? str(w, 'color', '#2f9e5b') : `color-mix(in srgb, ${str(w, 'color', '#2f9e5b')} 62%, #05080d)`,
           border: `2px solid ${str(w, 'color', '#2f9e5b')}`, color: '#fff', fontWeight: 700,
-          fontSize: 14, justifyContent: 'center', boxShadow: on ? `0 0 16px ${str(w, 'color', '#2f9e5b')}66` : 'none',
-          transform: on ? 'translateY(1px)' : 'none', cursor: interactive ? 'pointer' : 'default', opacity: 1,
+          fontSize: 14, justifyContent: 'center',
+          boxShadow: pressed ? `0 0 16px ${str(w, 'color', '#2f9e5b')}66` : 'none',
+          transform: pressed ? 'translateY(1px)' : 'none',
+          cursor: interactive ? 'pointer' : 'default', opacity: 1,
         }}
       >
         {str(w, 'text', 'START')}

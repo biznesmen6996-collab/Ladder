@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { TEMPLATES } from '../src/data/templates'
+import { TEMPLATES, type Template } from '../src/data/templates'
 import { Simulator } from '../src/core/simulator'
 import { exportPlcOpenXml, exportSt, exportIl } from '../src/core/exporters'
 import { importPlcOpenXml } from '../src/core/importers'
@@ -151,6 +151,99 @@ test('komponenty HMI w szablonach nie zachodzą na siebie', () => {
       for (const w of screen.widgets) {
         assert.ok(w.x + w.w <= screen.width + 1 && w.y + w.h <= screen.height + 1,
           `${t.name}: ${w.kind} wychodzi poza ekran ${screen.width}×${screen.height}`)
+      }
+    }
+  }
+})
+
+/**
+ * Przycisk HMI odwzorowuje styk chwilowy: przy wciśnięciu podaje wartość czynną,
+ * przy puszczeniu wraca do spoczynkowej. Dla zestyku rozwiernego (nc) jest odwrotnie.
+ */
+function hmiButton(project: ReturnType<Template['build']>, text: string) {
+  const w = project.hmi.flatMap((s) => s.widgets).find((x) => x.kind === 'button' && x.props.text === text)
+  assert.ok(w, `brak przycisku „${text}" na ekranie HMI`)
+  const nc = Boolean(w!.props.nc)
+  return {
+    key: w!.bind.out,
+    pressed: !nc,
+    released: nc,
+  }
+}
+
+test('panel HMI pozwala wielokrotnie uruchamiać i zatrzymywać napęd', () => {
+  const p = TEMPLATES.find((t) => t.id === 'motor-start-stop')!.build()
+  const sim = new Simulator(p)
+  const scans = (n = 3) => { for (let i = 0; i < n; i++) sim.scan() }
+  const start = hmiButton(p, 'START')
+  const stop = hmiButton(p, 'STOP')
+  const klik = (b: { key: string; pressed: boolean; released: boolean }) => {
+    sim.poke(b.key, b.pressed); scans()
+    sim.poke(b.key, b.released); scans()
+  }
+
+  scans()
+  assert.equal(sim.readVar('Stycznik'), false, 'po załączeniu zasilania napęd stoi')
+
+  klik(start)
+  assert.equal(sim.readVar('Stycznik'), true, 'START uruchamia napęd')
+
+  sim.poke(stop.key, stop.pressed); scans()
+  assert.equal(sim.readVar('Stycznik'), false, 'napęd zatrzymuje się już w chwili wciśnięcia STOP')
+  sim.poke(stop.key, stop.released); scans()
+  assert.equal(sim.readVar('Stycznik'), false, 'po puszczeniu STOP napęd nie rusza sam')
+
+  klik(start)
+  assert.equal(sim.readVar('Stycznik'), true, 'po zatrzymaniu można uruchomić ponownie')
+
+  // trzeci cykl — wyłapuje stan, z którego panel nigdy się nie podnosi
+  klik(stop)
+  klik(start)
+  assert.equal(sim.readVar('Stycznik'), true, 'kolejne cykle START/STOP działają bez końca')
+})
+
+test('zabezpieczenie termiczne blokuje rozruch i nie pozwala na samoczynny restart', () => {
+  const p = TEMPLATES.find((t) => t.id === 'motor-start-stop')!.build()
+  const sim = new Simulator(p)
+  const scans = (n = 3) => { for (let i = 0; i < n; i++) sim.scan() }
+  const start = hmiButton(p, 'START')
+  const klik = () => { sim.poke(start.key, start.pressed); scans(); sim.poke(start.key, start.released); scans() }
+
+  klik()
+  assert.equal(sim.readVar('Stycznik'), true)
+
+  sim.poke('Termik', false); scans()
+  assert.equal(sim.readVar('Stycznik'), false, 'termik wyłącza napęd')
+  assert.equal(sim.readVar('LampkaAwaria'), true, 'zapala się lampka awarii')
+
+  klik()
+  assert.equal(sim.readVar('Stycznik'), false, 'przy zadziałanym termiku START nie działa')
+
+  sim.poke('Termik', true); scans()
+  assert.equal(sim.readVar('Stycznik'), false, 'skasowanie termiku nie uruchamia napędu samoczynnie')
+
+  klik()
+  assert.equal(sim.readVar('Stycznik'), true, 'po skasowaniu awarii START działa ponownie')
+})
+
+test('przyciski podpięte do sygnałów rozwiernych są oznaczone jako NC', () => {
+  // Sygnał o wartości początkowej TRUE odwzorowuje zestyk rozwierny — przycisk
+  // sterujący nim musi w spoczynku podawać TRUE, inaczej po pierwszym użyciu
+  // panel zostaje w stanie, z którego nie da się już nic uruchomić.
+  for (const t of TEMPLATES) {
+    const p = t.build()
+    const rozwierne = new Set(
+      p.globals.filter((v) => v.type === 'BOOL' && /^(TRUE|1)$/i.test(v.initial ?? '')).map((v) => v.name),
+    )
+    for (const screen of p.hmi) {
+      for (const w of screen.widgets) {
+        if (w.kind !== 'button') continue
+        const key = w.bind.out
+        if (key && rozwierne.has(key)) {
+          assert.equal(w.props.nc, true,
+            `${t.name}: przycisk „${w.props.text}" steruje sygnałem rozwiernym ${key}, ` +
+            'więc musi mieć ustawione nc: true')
+        }
       }
     }
   }

@@ -127,7 +127,7 @@ CzasPracy := Licznik.HOURS;
         widgets: widgets([
           { kind: 'label', x: 30, y: 20, w: 400, h: 34, props: { text: 'Stanowisko napędowe M1', size: 20, bold: true } },
           { kind: 'button', x: 40, y: 90, w: 130, h: 70, bind: { out: 'Start' }, props: { text: 'START', color: '#2f9e5b' } },
-          { kind: 'button', x: 190, y: 90, w: 130, h: 70, bind: { out: 'Stop' }, props: { text: 'STOP', color: '#c0392b' } },
+          { kind: 'button', x: 190, y: 90, w: 130, h: 70, bind: { out: 'Stop' }, props: { text: 'STOP', color: '#c0392b', nc: true } },
           { kind: 'toggle', x: 40, y: 180, w: 200, h: 44, bind: { out: 'Termik' }, props: { text: 'Termik OK (symulacja)' } },
           { kind: 'motor', x: 420, y: 90, w: 140, h: 140, bind: { run: 'Stycznik', fault: 'LampkaAwaria' }, props: { label: 'M1' } },
           { kind: 'lamp', x: 600, y: 90, w: 80, h: 90, bind: { in: 'LampkaPraca' }, props: { color: '#3ddc84', text: 'PRACA' } },
@@ -183,7 +183,7 @@ K3_Trojkat := T_Przerwa.Q AND K1_Siec AND NOT K2_Gwiazda;
         widgets: widgets([
           { kind: 'label', x: 30, y: 18, w: 460, h: 32, props: { text: 'Rozruch gwiazda-trójkąt', size: 19, bold: true } },
           { kind: 'button', x: 40, y: 80, w: 120, h: 66, bind: { out: 'Start' }, props: { text: 'START', color: '#2f9e5b' } },
-          { kind: 'button', x: 175, y: 80, w: 120, h: 66, bind: { out: 'Stop' }, props: { text: 'STOP', color: '#c0392b' } },
+          { kind: 'button', x: 175, y: 80, w: 120, h: 66, bind: { out: 'Stop' }, props: { text: 'STOP', color: '#c0392b', nc: true } },
           { kind: 'lamp', x: 40, y: 180, w: 80, h: 90, bind: { in: 'K1_Siec' }, props: { color: '#4c9aff', text: 'K1 sieć' } },
           { kind: 'lamp', x: 130, y: 180, w: 80, h: 90, bind: { in: 'K2_Gwiazda' }, props: { color: '#f5a524', text: 'K2 gwiazda' } },
           { kind: 'lamp', x: 220, y: 180, w: 80, h: 90, bind: { in: 'K3_Trojkat' }, props: { color: '#3ddc84', text: 'K3 trójkąt' } },
@@ -450,7 +450,7 @@ LiczbaBrakow := LicznikBrakow.CV;
           { kind: 'sensor', x: 530, y: 70, w: 90, h: 80, bind: { in: 'CzujnikBraku' }, props: { label: 'B2', type: 'prox' } },
           { kind: 'cylinder', x: 660, y: 260, w: 200, h: 70, bind: { extend: 'Wypychacz' }, props: { label: 'C1' } },
           { kind: 'button', x: 40, y: 80, w: 110, h: 60, bind: { out: 'Start' }, props: { text: 'START', color: '#2f9e5b' } },
-          { kind: 'button', x: 160, y: 80, w: 110, h: 60, bind: { out: 'Stop' }, props: { text: 'STOP', color: '#c0392b' } },
+          { kind: 'button', x: 160, y: 80, w: 110, h: 60, bind: { out: 'Stop' }, props: { text: 'STOP', color: '#c0392b', nc: true } },
           { kind: 'button', x: 40, y: 150, w: 110, h: 50, bind: { out: 'Fotokomorka' }, props: { text: 'DETAL', color: '#4c9aff' } },
           { kind: 'toggle', x: 40, y: 210, w: 190, h: 44, bind: { out: 'CzujnikBraku' }, props: { text: 'Detal wadliwy' } },
           { kind: 'button', x: 40, y: 260, w: 110, h: 46, bind: { out: 'Kasuj' }, props: { text: 'KASUJ', color: '#7a8797' } },
