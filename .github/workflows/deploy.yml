@@ -1,0 +1,67 @@
+name: Publikacja na GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+      - claude/ladder-editor-plc-3tso8i
+  workflow_dispatch:
+
+# uprawnienia wymagane przez akcję deploy-pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# jednocześnie biegnie tylko jedno wdrożenie; nowy push czeka na poprzednie
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Budowanie
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalacja zależności
+        run: npm ci
+
+      - name: Kontrola typów
+        run: npm run typecheck
+
+      - name: Testy silnika
+        run: npm test
+
+      - name: Budowanie aplikacji
+        # aplikacja stoi pod adresem https://<użytkownik>.github.io/<repozytorium>/,
+        # więc ścieżka bazowa musi zawierać nazwę repozytorium
+        run: npm run build
+        env:
+          VITE_BASE: /${{ github.event.repository.name }}/
+
+      - name: Wyłączenie przetwarzania przez Jekyll
+        run: touch dist/.nojekyll
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    name: Wdrożenie
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

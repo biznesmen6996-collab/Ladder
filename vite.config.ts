@@ -2,8 +2,12 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// Ścieżka bazowa: '/nazwa-repo/' przy publikacji na GitHub Pages,
+// './' przy uruchamianiu lokalnie i z pliku.
+const base = process.env.VITE_BASE ?? './'
+
 export default defineConfig({
-  base: './',
+  base,
   plugins: [
     react(),
     VitePWA({
@@ -18,6 +22,7 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'any',
         start_url: './',
+        scope: './',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
