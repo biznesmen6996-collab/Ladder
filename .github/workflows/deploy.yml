@@ -49,11 +49,11 @@ jobs:
       - name: Wyłączenie przetwarzania przez Jekyll
         run: touch dist/.nojekyll
 
-      - uses: actions/configure-pages@v5
-        with:
-          # włącza GitHub Pages w repozytorium i przestawia źródło na Actions,
-          # dzięki czemu publikacja nie wymaga ręcznej konfiguracji
-          enablement: true
+      # Ten krok kończy się błędem, dopóki w repozytorium nie włączono Pages:
+      # Settings → Pages → Source: GitHub Actions. Domyślny token Actions nie ma
+      # uprawnień, by utworzyć witrynę Pages za właściciela repozytorium.
+      - name: Konfiguracja Pages
+        uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
         with:

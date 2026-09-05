@@ -16,9 +16,12 @@ Aplikacja publikuje się automatycznie na GitHub Pages przy każdym pushu:
 Workflow (`.github/workflows/deploy.yml`) najpierw sprawdza typy i uruchamia testy,
 a dopiero potem buduje i wdraża — nieudany test zatrzymuje publikację.
 
-Workflow sam włącza Pages w repozytorium (`enablement: true`), więc nie trzeba nic
-klikać w ustawieniach. Publikacja wymaga repozytorium publicznego albo konta z planem
-obsługującym Pages dla repozytoriów prywatnych.
+> **Jednorazowe ustawienie, którego nie da się zrobić z poziomu workflow:**
+> Settings → Pages → *Source* → **GitHub Actions**.
+> Domyślny token GitHub Actions nie ma uprawnień do utworzenia witryny Pages, więc
+> musi to zrobić właściciel repozytorium. Po przestawieniu tego przełącznika
+> wystarczy w zakładce Actions ponownie uruchomić workflow (*Re-run all jobs*) —
+> kolejne pushe publikują się już automatycznie.
 
 Pod tym adresem wchodzisz z telefonu i instalujesz aplikację na ekranie głównym —
 dalej działa już bez internetu.
