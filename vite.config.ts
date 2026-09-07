@@ -29,8 +29,21 @@ export default defineConfig({
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
-      workbox: { globPatterns: ['**/*.{js,css,html,svg,png,woff2}'] },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // nowa wersja przejmuje kontrolę od razu po odświeżeniu, zamiast czekać
+        // na zamknięcie wszystkich kart — bez tego zainstalowana aplikacja
+        // potrafi tygodniami serwować stary kod
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
+      },
     }),
   ],
+  define: {
+    // znacznik wersji widoczny w Ustawieniach — pozwala sprawdzić, czy przeglądarka
+    // pokazuje aktualne wydanie, czy kopię z pamięci podręcznej
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString().slice(0, 16).replace('T', ' ')),
+  },
   build: { target: 'es2022', chunkSizeWarningLimit: 1200 },
 })

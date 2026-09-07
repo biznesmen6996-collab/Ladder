@@ -133,6 +133,8 @@ najtańsza w utrzymaniu droga do obu platform:
 - **iPhone / iPad** — Udostępnij → „Dodaj do ekranu początkowego”
 - po instalacji projekt działa **bez internetu** (service worker cache'uje całą aplikację),
   a bieżący projekt zapisuje się w pamięci przeglądarki
+- nowe wydanie przejmuje kontrolę po odświeżeniu strony; numer zainstalowanej wersji
+  i przycisk **Pobierz najnowszą wersję** znajdziesz w zakładce *Ustawienia*
 
 Interfejs dostosowuje się do ekranu: na telefonie panele boczne stają się szufladami,
 pojawia się dolna nawigacja, elementy drabinki są większe, a paski narzędzi zwijają się

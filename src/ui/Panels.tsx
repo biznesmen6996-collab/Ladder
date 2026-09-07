@@ -584,6 +584,20 @@ export function ExportPanel() {
 /* Ustawienia                                                          */
 /* ================================================================== */
 
+declare const __BUILD_TIME__: string
+const BUILD_TIME = typeof __BUILD_TIME__ === 'string' ? __BUILD_TIME__ : 'wersja deweloperska'
+
+/** Usuwa service workera i pamięć podręczną, po czym przeładowuje aplikację. */
+async function forceUpdate() {
+  try {
+    const regs = await navigator.serviceWorker?.getRegistrations?.() ?? []
+    await Promise.all(regs.map((r) => r.unregister()))
+    const keys = await caches?.keys?.() ?? []
+    await Promise.all(keys.map((k) => caches.delete(k)))
+  } catch { /* brak service workera — wystarczy przeładowanie */ }
+  location.reload()
+}
+
 export function SettingsPanel() {
   const project = useStore((s) => s.project)
   const theme = useStore((s) => s.theme)
@@ -660,6 +674,21 @@ export function SettingsPanel() {
               <Icon name="monitor" size={14} /> {label}
             </button>
           ))}
+        </div>
+      </div>
+
+      <div className="section">
+        <div className="section-title">Wersja aplikacji</div>
+        <div className="row" style={{ flexWrap: 'wrap' }}>
+          <span className="chip mono">wydanie {BUILD_TIME}</span>
+          <button className="sm" onClick={forceUpdate}>
+            <Icon name="reset" size={14} /> Pobierz najnowszą wersję
+          </button>
+        </div>
+        <div className="hint" style={{ marginTop: 6 }}>
+          Aplikacja działa offline, więc trzyma swoją kopię w pamięci przeglądarki.
+          Jeśli po aktualizacji widzisz stare zachowanie, użyj przycisku powyżej —
+          wyczyści pamięć podręczną i przeładuje stronę.
         </div>
       </div>
 
